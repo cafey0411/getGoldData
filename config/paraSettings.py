@@ -1,0 +1,34 @@
+# -*- coding: utf-8 -*-
+#
+
+#监控值设定
+MONITOR_LATEST_PRICE_HIGH = 273
+MONITOR_LATEST_PRICE_LOW = 269
+#监控时间间隔
+MONITOR_TIME_FREQUENCY = 59
+
+
+#Ag(T+D)
+#做空
+
+
+#买入价钱
+AG_SEL_PRICE_1 = 3624
+#买入手数
+AG_BUY_LOTS_1 = 20
+
+#买入价钱
+AG_SEL_PRICE_2 = 3624
+#买入手数
+AG_BUY_LOTS_2 = 100
+
+#买入价钱
+AG_SEL_PRICE_3 = 3660
+#买入手数
+AG_BUY_LOTS_3 = 100
+
+#保证金率
+AGTD_BOND_RATE = 0.1
+
+#延期天数
+DELAY_DAYS = 3

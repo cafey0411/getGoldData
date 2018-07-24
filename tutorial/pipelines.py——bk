@@ -1,0 +1,58 @@
+# -*- coding: utf-8 -*-
+
+# Define your item pipelines here
+#
+# Don't forget to add your pipeline to the ITEM_PIPELINES setting
+# See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+import requests
+from pydispatch import dispatcher
+#from tutorial import settings
+from config import paraSettings
+import os
+import MySQLdb
+import time
+from scrapy import signals
+
+class ImageDownloadPipeline(object):
+    def __init__(self):
+        #注册两个事件
+        dispatcher.connect(self.spider_opened, signals.spider_opened)
+        dispatcher.connect(self.spider_closed, signals.spider_closed)
+        print("===========init")
+
+    def spider_opened(self, spider):
+        print("===========spider_opened")
+        # 数据库连接参数配置
+        conn = MySQLdb.connect(host=paraSettings.MYSQL_HOST,
+                               port=paraSettings.MYSQL_PORT,
+                               user=paraSettings.MYSQL_USER,
+                               passwd=paraSettings.MYSQL_PASSWD,
+                               db=paraSettings.MYSQL_DBNAME,
+                               charset=paraSettings.MYSQL_ENCODE)
+        self.cur = conn.cursor()
+        self.conn = conn
+
+    def spider_closed(self, spider):
+        #提交事务
+        self.cur.close()
+        self.conn.commit()  # 记得加事务提交
+        self.conn.close()
+        print("===========spider_closed")
+
+    #处理每一个IMTE（多次调用）
+    def process_item(self, item, spider):
+        #time
+        self._conditional_insert(item['date'][0], item['contract_name'],item['latest_price'])
+        return item
+
+    #写入数据库中
+    def _conditional_insert(self, date, table_data,latest_price):
+        now_time = time.strftime("%Y-%m-%d %X")
+        sql = "insert into GoldData(date, contract_name, latest_price,high_price,low_price,open_price,now_date) "
+        sql += " values('%s','%s','%s','%s','%s','%s','%s')"
+        #params=(date, str(table_data[0]),table_data[1],table_data[2],table_data[3],table_data[4],table_data[5], now_time)
+        params = (
+        str(date), str(table_data[0]), latest_price[0], table_data[1], table_data[2], table_data[3], str(now_time))
+        print (sql % params)
+        self.cur.execute(sql % params)
+
