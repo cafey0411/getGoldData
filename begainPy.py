@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- import sys, locale
 #from scrapy import cmdline
-
+import datetime
 import time
 import os
 
@@ -16,7 +16,7 @@ schedule = sched.scheduler ( time.time, time.sleep )
 def func():
 
     #指定时间内运行==========================================================START
-    bridgetime = "2018-02-24 "#时间随便定，
+    bridgetime = time.strftime("%Y-%m-%d ")#时间随便定，
     nowtime = bridgetime + time.strftime("%X")
 
     #AM
@@ -31,7 +31,11 @@ def func():
 
     #PM2
     starttime_PM2 = bridgetime + "20:00:00"
-    endtime_PM2 =  bridgetime + "23:59:00"
+    #后一天
+    now = datetime.datetime.now()
+    delta = datetime.timedelta(days=1)
+    n_days = now + delta
+    endtime_PM2 =  n_days.strftime("%Y-%m-%d ") + "02:31:00"
     flag3 = Checktime_YMDHMS(starttime_PM2,endtime_PM2,nowtime)
 
     if flag1 == "in" or flag2 == "in" or flag3 == "in":
@@ -48,17 +52,24 @@ def mymain():
 
 
 #判断时间是不是落在里面
-def Checktime_YMDHMS(starttime,endtime,weibotime):
+def Checktime_YMDHMS(starttime, endtime, nowTime):
     Flag='null'
     starttime=time.strptime(starttime,'%Y-%m-%d %H:%M:%S')
     endtime=time.strptime(endtime,'%Y-%m-%d %H:%M:%S')
-    weibotime=time.strptime(str(weibotime),'%Y-%m-%d %H:%M:%S')
-    if int(time.mktime(endtime)) < int(time.mktime(weibotime)):
-        Flag='after'
-    elif int(time.mktime(starttime))<= int(time.mktime(weibotime)) and int(time.mktime(endtime))>=int(time.mktime(weibotime)):
-        Flag='in'
-    elif int(time.mktime(starttime)) > int(time.mktime(weibotime)):
-        Flag='before'
+    #星期几
+    whatday = int(datetime.datetime.strptime(nowTime, '%Y-%m-%d %H:%M:%S').strftime("%w"))
+
+    nowTime = time.strptime(str(nowTime), '%Y-%m-%d %H:%M:%S')
+    #排除周六日
+    if whatday != 6 and whatday != 0:
+        if int(time.mktime(endtime)) < int(time.mktime(nowTime)):
+            Flag='after'
+        elif int(time.mktime(starttime))<= int(time.mktime(nowTime)) and int(time.mktime(endtime))>=int(time.mktime(nowTime)):
+            Flag='in'
+        elif int(time.mktime(starttime)) > int(time.mktime(nowTime)):
+            Flag='before'
+    else:
+        print("周末休息！")
     return Flag
 
 if __name__=="__main__":
